@@ -325,6 +325,20 @@
             <param name="dependency">The dependency type to match against.</param>
             <returns>An updated set of conditions that can be applied to a list of types.</returns>
         </member>
+        <member name="M:NetArchTest.Rules.Conditions.HaveDependenciesOn(System.String[])">
+            <summary>
+            Selects types that have a dependency on a list of types.
+            </summary>
+            <param name="dependencies">The dependencies to match against.</param>
+            <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        </member>
+        <member name="M:NetArchTest.Rules.Conditions.NotHaveDependenciesOn(System.String[])">
+            <summary>
+            Selects types that do not have a dependency on a list of types.
+            </summary>
+            <param name="dependencies">The dependency type to match against.</param>
+            <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        </member>
         <member name="T:NetArchTest.Rules.Dependencies.DependencySearch">
             <summary>
             Finds dependencies within a given set of types.
@@ -1122,6 +1136,20 @@
             Selects types that do not have a dependency on a particular type.
             </summary>
             <param name="dependency">The dependency type to match against.</param>
+            <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        </member>
+        <member name="M:NetArchTest.Rules.Predicates.HaveDependenciesOn(System.String[])">
+            <summary>
+            Selects types that have a dependency on a list of types.
+            </summary>
+            <param name="dependencies">The dependencies to match against.</param>
+            <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        </member>
+        <member name="M:NetArchTest.Rules.Predicates.DoNotHaveDependenciesOn(System.String[])">
+            <summary>
+            Selects types that do not have a dependency on a particular type.
+            </summary>
+            <param name="dependencies">The list of dependencies to match against.</param>
             <returns>An updated set of predicates that can be applied to a list of types.</returns>
         </member>
         <member name="T:NetArchTest.Rules.TestResult">

@@ -595,8 +595,9 @@
                 .HaveDependencyOn("NetArchTest.TestStructure.Dependencies.ExampleDependency")
                 .GetTypes();
 
-            Assert.Single(result); // Only one type found
-            Assert.Equal<Type>(typeof(HasDependency), result.First()); // The correct type found
+            Assert.Equal(2, result.Count()); // Two types found
+            Assert.Equal<Type>(typeof(HasDependencies), result.First()); // The correct type found
+            Assert.Equal<Type>(typeof(HasDependency), result.Last()); // The correct type found
         }
 
         [Fact(DisplayName = "Types can be selected if they do not have a dependency on another type.")]
@@ -614,5 +615,35 @@
             Assert.Equal<Type>(typeof(NoDependency), result.First()); // The correct type found
         }
 
+        [Fact(DisplayName = "Types can be selected if they have a dependency on any item in a list of types.")]
+        public void HaveDepencencies_MatchesFound_ClassSelected()
+        {
+            var result = Types
+                .InAssembly(Assembly.GetAssembly(typeof(ClassA1)))
+                .That()
+                .ResideInNamespace("NetArchTest.TestStructure.Dependencies.Implementation")
+                .And()
+                .HaveDependenciesOn(new string[] { "NetArchTest.TestStructure.Dependencies.ExampleDependency", "NetArchTest.TestStructure.Dependencies.SecondExampleDependency" })
+                .GetTypes();
+
+            Assert.Equal(2, result.Count()); // Two types found
+            Assert.Equal<Type>(typeof(HasDependencies), result.First()); // The correct type found
+            Assert.Equal<Type>(typeof(HasDependency), result.Last()); // The correct type found
+        }
+
+        [Fact(DisplayName = "Types can be selected if they do not have a dependency on a list of types.")]
+        public void DoNotHaveDepencencies_MatchesFound_ClassSelected()
+        {
+            var result = Types
+                .InAssembly(Assembly.GetAssembly(typeof(ClassA1)))
+                .That()
+                .ResideInNamespace("NetArchTest.TestStructure.Dependencies.Implementation")
+                .And()
+                .DoNotHaveDependenciesOn(new string[] { "NetArchTest.TestStructure.Dependencies.ExampleDependency", "NetArchTest.TestStructure.Dependencies.SecondExampleDependency" })
+                .GetTypes();
+
+            Assert.Single(result); // Only one type found
+            Assert.Equal<Type>(typeof(NoDependency), result.First()); // The correct type found
+        }
     }
 }

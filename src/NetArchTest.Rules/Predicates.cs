@@ -440,5 +440,27 @@
             _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOn, new List<string> { dependency }, false);
             return new PredicateList(_types, _sequence);
         }
+
+        /// <summary>
+        /// Selects types that have a dependency on a list of types.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList HaveDependenciesOn(string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOn, dependencies, true);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that do not have a dependency on a particular type.
+        /// </summary>
+        /// <param name="dependencies">The list of dependencies to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList DoNotHaveDependenciesOn(string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOn, dependencies, false);
+            return new PredicateList(_types, _sequence);
+        }
     }
 }

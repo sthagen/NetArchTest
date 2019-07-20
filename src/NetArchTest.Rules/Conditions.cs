@@ -439,5 +439,28 @@
             _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOn, new List<string> { dependency }, false);
             return new ConditionList(_types, _should, _sequence);
         }
+
+        /// <summary>
+        /// Selects types that have a dependency on a list of types.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList HaveDependenciesOn(string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOn, dependencies, true);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that do not have a dependency on a list of types.
+        /// </summary>
+        /// <param name="dependencies">The dependency type to match against.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList NotHaveDependenciesOn(string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOn, dependencies, false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
     }
 }

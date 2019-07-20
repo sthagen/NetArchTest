@@ -577,6 +577,38 @@
             Assert.True(result.IsSuccessful);
         }
 
+        [Fact(DisplayName = "Types can be selected if they have a dependency on any item in a list of types.")]
+        public void HaveDependenciesOn_MatchesFound_ClassSelected()
+        {
+            var result = Types
+                .InAssembly(Assembly.GetAssembly(typeof(ClassA1)))
+                .That()
+                .ResideInNamespace("NetArchTest.TestStructure.Dependencies.Implementation")
+                .And()
+                .DoNotHaveName("NoDependency")
+                .Should()
+                .HaveDependenciesOn(new string[] { "NetArchTest.TestStructure.Dependencies.ExampleDependency", "NetArchTest.TestStructure.Dependencies.SecondExampleDependency" })
+                .GetResult();
+
+            Assert.True(result.IsSuccessful);
+        }
+
+        [Fact(DisplayName = "Types can be selected if they do not have a dependency on a list of types.")]
+        public void NotHaveHaveDependenciesOn_MatchesFound_ClassSelected()
+        {
+            var result = Types
+                .InAssembly(Assembly.GetAssembly(typeof(ClassA1)))
+                .That()
+                .ResideInNamespace("NetArchTest.TestStructure.Dependencies.Implementation")
+                .And()
+                .HaveNameStartingWith("NoDependency")
+                .Should()
+                .NotHaveDependenciesOn(new string[] { "NetArchTest.TestStructure.Dependencies.ExampleDependency", "NetArchTest.TestStructure.Dependencies.SecondExampleDependency" })
+                .GetResult();
+
+            Assert.True(result.IsSuccessful);
+        }
+
         [Fact(DisplayName = "Types failing condition are reported when test fails.")]
         public void MatchNotFound_ClassesReported()
         {
