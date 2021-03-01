@@ -54,7 +54,8 @@
             }
 
             // If we've failed, get a collection of failing types so these can be reported in a failing test.
-            return TestResult.Failure(_sequence.Execute(_types, selected: !_should).Select(t => t.ToType()));
+            var failedTypes = _sequence.Execute(_types, selected: !_should).ToList();
+            return TestResult.Failure(failedTypes);
         }
 
         /// <summary>
@@ -79,6 +80,7 @@
         /// Specifies that any subsequent condition should be treated as an "and" condition.
         /// </summary>
         /// <returns>An set of conditions that can be applied to a list of classes.</returns>
+        /// <remarks>And() has higher priority than Or() and it is computed first.</remarks>
         public Conditions And()
         {
             return new Conditions(_types, _should, _sequence);

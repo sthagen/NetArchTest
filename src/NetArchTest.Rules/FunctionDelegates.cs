@@ -8,6 +8,12 @@
     using NetArchTest.Rules.Extensions;
     using Mono.Cecil;
 
+    internal class StringAndComparisonStrategy
+    {
+		public string Value { get; }
+        public StringComparison Comparer { get; }
+    }
+
     /// <summary>
     /// Defines the various functions that can be applied to a collection of types.
     /// </summary>
@@ -47,29 +53,33 @@
         };
 
         /// <summary> Function for matching the start of a type name. </summary>
-        internal static FunctionDelegate<string> HaveNameStartingWith = delegate (IEnumerable<TypeDefinition> input, string start, bool condition)
+        internal static FunctionDelegate<string> HaveNameStartingWith = MakeFunctionDelegateUsingStringComparerForHaveNameStartingWith(StringComparison.InvariantCultureIgnoreCase);
+
+        internal static FunctionDelegate<string> MakeFunctionDelegateUsingStringComparerForHaveNameStartingWith(StringComparison comparer) => delegate (IEnumerable<TypeDefinition> input, string start, bool condition)
         {
-            if (condition)
-            {
-                return input.Where(c => c.Name.StartsWith(start, StringComparison.InvariantCultureIgnoreCase));
-            }
-            else
-            {
-                return input.Where(c => !c.Name.StartsWith(start, StringComparison.InvariantCultureIgnoreCase));
-            }
+	        if (condition)
+	        {
+		        return input.Where(c => c.Name.StartsWith(start, comparer));
+	        }
+		    else
+	        {
+		        return input.Where(c => !c.Name.StartsWith(start, comparer));
+	        }
         };
 
         /// <summary> Function for matching the end of a type name. </summary>
-        internal static FunctionDelegate<string> HaveNameEndingWith = delegate (IEnumerable<TypeDefinition> input, string end, bool condition)
+        internal static FunctionDelegate<string> HaveNameEndingWith = MakeFunctionDelegateUsingStringComparerForHaveNameEndingWith(StringComparison.InvariantCultureIgnoreCase);
+
+        internal static FunctionDelegate<string> MakeFunctionDelegateUsingStringComparerForHaveNameEndingWith(StringComparison comparer) => delegate (IEnumerable<TypeDefinition> input, string end, bool condition)
         {
-            if (condition)
-            {
-                return input.Where(c => c.Name.EndsWith(end, StringComparison.InvariantCultureIgnoreCase));
-            }
-            else
-            {
-                return input.Where(c => !c.Name.EndsWith(end, StringComparison.InvariantCultureIgnoreCase));
-            }
+	        if (condition)
+	        {
+		        return input.Where(c => c.Name.EndsWith(end, comparer));
+	        }
+	        else
+	        {
+		        return input.Where(c => !c.Name.EndsWith(end, comparer));
+	        }
         };
 
         /// <summary> Function for finding classes with a particular custom attribute. </summary>
@@ -84,6 +94,22 @@
                 return input.Where(c => !c.CustomAttributes.Any(a => attribute.FullName.Equals(a.AttributeType.FullName, StringComparison.InvariantCultureIgnoreCase)));
             }
         };
+
+        /// <summary> Function for finding classes decorated with a particular custom attribute or derived one</summary>
+        internal static FunctionDelegate<Type> HaveCustomAttributeOrInherit = delegate (IEnumerable<TypeDefinition> input, Type attribute, bool condition)
+        {
+            // Convert the incoming type to a definition
+            var target = attribute.ToTypeDefinition();
+            if (condition)
+            {
+                return input.Where(c => c.CustomAttributes.Any(a => a.AttributeType.Resolve().IsSubclassOf(target) || attribute.FullName.Equals(a.AttributeType.FullName, StringComparison.InvariantCultureIgnoreCase)));
+            }
+            else
+            {
+                return input.Where(c => !(c.CustomAttributes.Any(a => a.AttributeType.Resolve().IsSubclassOf(target) || attribute.FullName.Equals(a.AttributeType.FullName, StringComparison.InvariantCultureIgnoreCase))));
+            }
+        };
+
 
         /// <summary> Function for finding classes that inherit from a particular type. </summary>
         internal static FunctionDelegate<Type> Inherits = delegate (IEnumerable<TypeDefinition> input, Type type, bool condition)
@@ -195,16 +221,43 @@
             }
         };
 
+        /// <summary> Function for finding nested public classes. </summary>
+        internal static FunctionDelegate<bool> BeNestedPublic = delegate (IEnumerable<TypeDefinition> input, bool dummy, bool condition)
+        {
+            if (condition)
+            {
+                return input.Where(c => c.IsNestedPublic);
+            }
+            else
+            {
+                return input.Where(c => !c.IsNestedPublic);
+            }
+        };
+
+        /// <summary> Function for finding nested private classes. </summary>
+        internal static FunctionDelegate<bool> BeNestedPrivate = delegate (IEnumerable<TypeDefinition> input, bool dummy, bool condition)
+        {
+            if (condition)
+            {
+                return input.Where(c => c.IsNestedPrivate);
+            }
+            else
+            {
+                return input.Where(c => !c.IsNestedPrivate);
+            }
+        };
+
+
         /// <summary> Function for finding public classes. </summary>
         internal static FunctionDelegate<bool> BePublic = delegate (IEnumerable<TypeDefinition> input, bool dummy, bool condition)
         {
             if (condition)
             {
-                return input.Where(c => c.IsPublic);
+                return input.Where(c => c.IsNested ? c.IsNestedPublic : c.IsPublic);
             }
             else
             {
-                return input.Where(c => c.IsNotPublic);
+                return input.Where(c => c.IsNested ? !c.IsNestedPublic : c.IsNotPublic);
             }
         };
 
@@ -266,20 +319,20 @@
             Regex r = new Regex(pattern, RegexOptions.IgnoreCase);
             if (condition)
             {
-                return input.Where(c => r.Match(c.Namespace).Success);
+                return input.Where(c => r.Match(c.GetNamespace()).Success);
             }
             else
             {
-                return input.Where(c => !r.Match(c.Namespace).Success);
+                return input.Where(c => !r.Match(c.GetNamespace()).Success);
             }
         };
 
-        /// <summary> Function for finding types that have a dependency on a specific type. </summary>
-        internal static FunctionDelegate<IEnumerable<string>> HaveDependencyOn = delegate (IEnumerable<TypeDefinition> input, IEnumerable<string> dependencies, bool condition)
+        /// <summary> Function for finding types that have a dependency on any of the supplied types. </summary>
+        internal static FunctionDelegate<IEnumerable<string>> HaveDependencyOnAny = delegate (IEnumerable<TypeDefinition> input, IEnumerable<string> dependencies, bool condition)
         {
             // Get the types that contain the dependencies
             var search = new DependencySearch();
-            var results = search.FindTypesWithDependencies(input, dependencies);
+            var results = search.FindTypesThatHaveDependencyOnAny(input, dependencies);
 
             if (condition)
             {
@@ -288,6 +341,52 @@
             else
             {
                 return input.Where(t => !results.Contains(t));
+            }
+        };
+
+        /// <summary> Function for finding types that have a dependency on all of the supplied types. </summary>
+        internal static FunctionDelegate<IEnumerable<string>> HaveDependencyOnAll = delegate (IEnumerable<TypeDefinition> input, IEnumerable<string> dependencies, bool condition)
+        {
+            // Get the types that contain the dependencies
+            var search = new DependencySearch();
+            var results = search.FindTypesThatHaveDependencyOnAll(input, dependencies);
+
+            if (condition)
+            {
+                return results;
+            }
+            else
+            {
+                return input.Where(t => !results.Contains(t));
+            }
+        };
+
+        /// <summary> Function for finding types that have a dependency on type other than one of the supplied types.</summary>
+        internal static FunctionDelegate<IEnumerable<string>> OnlyHaveDependenciesOnAnyOrNone = delegate (IEnumerable<TypeDefinition> input, IEnumerable<string> dependencies, bool condition)
+        {            
+            var search = new DependencySearch();
+            var results = search.FindTypesThatOnlyHaveDependenciesOnAnyOrNone(input, dependencies);
+
+            if (condition)
+            {
+                return results;
+            }
+            else
+            {
+                return input.Where(t => !results.Contains(t));
+            }
+        };
+
+        /// <summary> Function for finding public classes. </summary>
+        internal static FunctionDelegate<ICustomRule> MeetCustomRule = delegate (IEnumerable<TypeDefinition> input, ICustomRule rule, bool condition)
+        {
+            if (condition)
+            {
+                return input.Where(t => rule.MeetsRule(t));
+            }
+            else
+            {
+                return input.Where(t => !rule.MeetsRule(t));
             }
         };
     }

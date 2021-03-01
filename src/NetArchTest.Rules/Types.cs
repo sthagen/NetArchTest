@@ -8,6 +8,8 @@
     using System.Runtime.CompilerServices;
     using NetArchTest.Rules.Extensions;
     using Mono.Cecil;
+    using NetArchTest.Rules.Dependencies;
+    using NetArchTest.Rules.Dependencies.DataStructures;
 
     /// <summary>
     /// Creates a list of types that can have predicates and conditions applied to it.
@@ -18,8 +20,10 @@
         private readonly List<TypeDefinition> _types;
 
         /// <summary> The list of namespaces to exclude from the current domain. </summary>
-        private static List<string> _exclusionList = new List<string>
+        private static readonly List<string> _exclusionList = new List<string>
         { "System", "Microsoft", "Mono.Cecil", "netstandard", "NetArchTest.Rules", "<Module>", "xunit" };
+
+        private static readonly NamespaceTree _exclusionTree = new NamespaceTree(_exclusionList);
 
         /// <summary>
         /// Prevents any external class initializing a new instance of the <see cref="Types"/> class.
@@ -39,7 +43,7 @@
             var currentDomain = new List<Assembly>();
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
-                if (!_exclusionList.Any(e => assembly.FullName.StartsWith(e)))
+                if (!_exclusionTree.GetAllMatchingNames(assembly.FullName).Any())                   
                 {
                     currentDomain.Add(assembly);
                 }
@@ -193,8 +197,9 @@
         /// Creates a list of all the types found on a particular path.
         /// </summary>
         /// <param name="path">The relative path to load types from.</param>
+        /// <param name="searchDirectories">An optional list of search directories to allow resolution of referenced assemblies.</param>
         /// <returns>A list of types that can have predicates and conditions applied to it.</returns>
-        public static Types FromPath(string path)
+        public static Types FromPath(string path, IEnumerable<string> searchDirectories = null)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -206,12 +211,23 @@
             if (Directory.Exists(path))
             {
                 var files = Directory.GetFiles(path, "*.dll");
+                var readerParams = new ReaderParameters();
+
+                if (searchDirectories?.Any() ?? false)
+                {
+                    var defaultAssemblyResolver = new DefaultAssemblyResolver();
+                    foreach (var searchDirectory in searchDirectories)
+                    {
+                        defaultAssemblyResolver.AddSearchDirectory(searchDirectory);
+                    }
+                    readerParams.AssemblyResolver = defaultAssemblyResolver;
+                }
 
                 foreach (var file in files)
                 {
-                    var assembly = ReadAssemblyDefinition(file);
-
-                    if (assembly != null && !_exclusionList.Any(e => assembly.FullName.StartsWith(e)))
+                    var assembly = ReadAssemblyDefinition(file, readerParams);
+                 
+                    if (assembly != null && !_exclusionTree.GetAllMatchingNames(assembly.FullName).Any())
                     {
                         types.AddRange(assembly.Modules.SelectMany(t => t.Types));
                     }
@@ -226,31 +242,26 @@
             return new Types(list);
         }
 
+
         /// <summary>
         /// Recursively fetch all the nested types in a collection of types.
         /// </summary>
         /// <returns>The expanded collection of types</returns>
         private static IEnumerable<TypeDefinition> GetAllTypes(IEnumerable<TypeDefinition> types)
         {
-            var output = new List<TypeDefinition>();
-            var check = new Queue<TypeDefinition>(types);
+            var output = new List<TypeDefinition>(types.Where(x => !_exclusionTree.GetAllMatchingNames(x.FullName).Any()));          
 
-            while (check.Count > 0)
+            for (int i = 0; i < output.Count; ++i)
             {
-                var type = check.Dequeue();
+                var type = output[i];
 
-                if (!_exclusionList.Any(e => type.FullName.StartsWith(e, StringComparison.InvariantCultureIgnoreCase)))
-                {
-                    output.Add(type);
-
-                    foreach (var nested in type.NestedTypes)
+                foreach (var nested in type.NestedTypes)
+                {                   
+                    // Ignore all compiler-generated nested classes
+                    if (!nested.CustomAttributes.Any(x => x?.AttributeType?.FullName == typeof(CompilerGeneratedAttribute).FullName))
                     {
-                        // Ignore compiler-generated async classes
-                        if (!nested.Interfaces.Any(i => i.InterfaceType.FullName.Equals(typeof(IAsyncStateMachine).FullName)))
-                        {
-                            check.Enqueue(nested);
-                        }
-                    }
+                        output.Add(nested);
+                    }                   
                 }
             }
 

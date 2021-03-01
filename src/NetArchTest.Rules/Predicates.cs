@@ -40,9 +40,12 @@
         /// </summary>
         /// <param name="name">The name of the class to match against.</param>
         /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
-        public PredicateList HaveName(string name)
+        public PredicateList HaveName(params string[] name)
         {
-            _sequence.AddFunctionCall(FunctionDelegates.HaveName, name, true);
+            foreach (var item in name)
+            {
+                _sequence.AddFunctionCall(FunctionDelegates.HaveName, item, true);
+            }
             return new PredicateList(_types, _sequence);
         }
 
@@ -51,9 +54,12 @@
         /// </summary>
         /// <param name="name">The name of the class to match against.</param>
         /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
-        public PredicateList DoNotHaveName(string name)
+        public PredicateList DoNotHaveName(params string[] name)
         {
-            _sequence.AddFunctionCall(FunctionDelegates.HaveName, name, false);
+            foreach (var item in name)
+            {
+                _sequence.AddFunctionCall(FunctionDelegates.HaveName, item, false);
+            }
             return new PredicateList(_types, _sequence);
         }
 
@@ -84,10 +90,25 @@
         /// </summary>
         /// <param name="start">The text to match against.</param>
         /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
-        public PredicateList HaveNameStartingWith(string start)
+        public PredicateList HaveNameStartingWith(params string[] start)
         {
-            _sequence.AddFunctionCall(FunctionDelegates.HaveNameStartingWith, start, true);
+            foreach (var item in start)
+            {
+                _sequence.AddFunctionCall(FunctionDelegates.HaveNameStartingWith, item, true);
+            }
             return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose names start with the specified text.
+        /// </summary>
+        /// <param name="start">The text to match against.</param>
+        /// <param name="comparer">The string comparer.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList HaveNameStartingWith(string start, StringComparison comparer)
+        {
+	        _sequence.AddFunctionCall(FunctionDelegates.MakeFunctionDelegateUsingStringComparerForHaveNameStartingWith(comparer), start, true);
+	        return new PredicateList(_types, _sequence);
         }
 
         /// <summary>
@@ -95,10 +116,25 @@
         /// </summary>
         /// <param name="start">The text to match against.</param>
         /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
-        public PredicateList DoNotHaveNameStartingWith(string start)
+        public PredicateList DoNotHaveNameStartingWith(params string[] start)
         {
-            _sequence.AddFunctionCall(FunctionDelegates.HaveNameStartingWith, start, false);
+            foreach (var item in start)
+            {
+                _sequence.AddFunctionCall(FunctionDelegates.HaveNameStartingWith, item, false);
+            }
             return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose names do not start with the specified text.
+        /// </summary>
+        /// <param name="start">The text to match against.</param>
+        /// <param name="comparer">The string comparer.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList DoNotHaveNameStartingWith(string start, StringComparison comparer)
+        {
+	        _sequence.AddFunctionCall(FunctionDelegates.MakeFunctionDelegateUsingStringComparerForHaveNameStartingWith(comparer), start, false);
+	        return new PredicateList(_types, _sequence);
         }
 
         /// <summary>
@@ -113,6 +149,18 @@
         }
 
         /// <summary>
+        /// Selects types whose names end with the specified text.
+        /// </summary>
+        /// <param name="end">The text to match against.</param>
+        /// <param name="comparer">The string comparer.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList HaveNameEndingWith(string end, StringComparison comparer)
+        {
+	        _sequence.AddFunctionCall(FunctionDelegates.MakeFunctionDelegateUsingStringComparerForHaveNameEndingWith(comparer), end, true);
+	        return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
         /// Selects types whose names do not end with the specified text.
         /// </summary>
         /// <param name="end">The text to match against.</param>
@@ -124,7 +172,19 @@
         }
 
         /// <summary>
-        /// Selects types that implement a specific custom attribute.
+        /// Selects types whose names do not end with the specified text.
+        /// </summary>
+        /// <param name="end">The text to match against.</param>
+        /// <param name="comparer">The string comparer.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList DoNotHaveNameEndingWith(string end, StringComparison comparer)
+        {
+	        _sequence.AddFunctionCall(FunctionDelegates.MakeFunctionDelegateUsingStringComparerForHaveNameEndingWith(comparer), end, false);
+	        return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that are decorated with a specific custom attribute.
         /// </summary>
         /// <param name="attribute">The attribute to match against.</param>
         /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
@@ -135,13 +195,35 @@
         }
 
         /// <summary>
-        /// Selects types that do not implement a specific custom attribute.
+        /// Selects types that are decorated with a specific custom attribute or derived one.
+        /// </summary>
+        /// <param name="attribute">The base attribute to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList HaveCustomAttributeOrInherit(Type attribute)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveCustomAttributeOrInherit, attribute, true);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that are not decorated with a specific custom attribute.
         /// </summary>
         /// <param name="attribute">The attribute to match against.</param>
         /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
         public PredicateList DoNotHaveCustomAttribute(Type attribute)
         {
             _sequence.AddFunctionCall(FunctionDelegates.HaveCustomAttribute, attribute, false);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that are not decorated with a specific custom attribute or derived one.
+        /// </summary>
+        /// <param name="attribute">The base attribute to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList DoNotHaveCustomAttributeOrInherit(Type attribute)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveCustomAttributeOrInherit, attribute, false);
             return new PredicateList(_types, _sequence);
         }
 
@@ -280,6 +362,26 @@
         }
 
         /// <summary>
+        /// Selects types that are nested and declared as public.
+        /// </summary>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList AreNestedPublic()
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.BeNestedPublic, true, true);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that are nested and declared as private.
+        /// </summary>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList AreNestedPrivate()
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.BeNestedPrivate, true, true);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
         /// Selects types that are not nested.
         /// </summary>
         /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
@@ -288,6 +390,29 @@
             _sequence.AddFunctionCall(FunctionDelegates.BeNested, true, false);
             return new PredicateList(_types, _sequence);
         }
+
+        /// <summary>
+        /// Selects types that are not nested and declared as public.
+        /// </summary>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        /// <remarks>NB: This method will return non-nested types and nested types that are declared as private.</remarks>
+        public PredicateList AreNotNestedPublic()
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.BeNestedPublic, true, false);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that are not nested and declared as private.
+        /// </summary>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        /// <remarks>NB: This method will return non-nested types and nested types that are declared as public.</remarks>
+        public PredicateList AreNotNestedPrivate()
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.BeNestedPrivate, true, false);
+            return new PredicateList(_types, _sequence);
+        }
+
 
         /// <summary>
         /// Selects types that have public scope.
@@ -409,6 +534,39 @@
         }
 
         /// <summary>
+        /// Selects types whose namespaces start with a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList ResideInNamespaceStartingWith(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"^{name}", true);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose namespaces end with a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList ResideInNamespaceEndingWith(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"{name}$", true);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose namespaces contain a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList ResideInNamespaceContaining(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"^.*{name}.*$", true);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
         /// Selects types whose namespaces do not match a regular expression.
         /// </summary>
         /// <param name="pattern">The regular expression pattern to match against.</param>
@@ -420,24 +578,134 @@
         }
 
         /// <summary>
+        /// Selects types whose namespaces start with a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList DoNotResideInNamespaceStartingWith(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"^{name}", false);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose namespaces end with a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList DoNotResideInNamespaceEndingWith(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"{name}$", false);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose namespaces contain a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public PredicateList DoNotResideInNamespaceContaining(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"^.*{name}.*$", false);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
         /// Selects types that have a dependency on a particular type.
         /// </summary>
-        /// <param name="dependency">The dependency type to match against.</param>
+        /// <param name="dependency">The dependency type to match against. This can be a namespace or a specific type.</param>
         /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
         public PredicateList HaveDependencyOn(string dependency)
         {
-            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOn, new List<string> { dependency }, true);
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAny, new List<string> { dependency }, true);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that have a dependency on any of the supplied types.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public PredicateList HaveDependencyOnAny(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAny, dependencies, true);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that have a dependency on all of the particular types.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public PredicateList HaveDependencyOnAll(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAll, dependencies, true);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that have a dependency on any of the supplied types and cannot have any other dependency. 
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public PredicateList OnlyHaveDependenciesOn(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.OnlyHaveDependenciesOnAnyOrNone, dependencies, true);
             return new PredicateList(_types, _sequence);
         }
 
         /// <summary>
         /// Selects types that do not have a dependency on a particular type.
         /// </summary>
-        /// <param name="dependency">The dependency type to match against.</param>
+        /// <param name="dependency">The dependency type to match against. This can be a namespace or a specific type.</param>
         /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
         public PredicateList DoNotHaveDependencyOn(string dependency)
         {
-            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOn, new List<string> { dependency }, false);
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAny, new List<string> { dependency }, false);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that do not have a dependency on any of the particular types.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public PredicateList DoNotHaveDependencyOnAny(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAny, dependencies, false);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that do not have a dependency on all of the particular types.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public PredicateList DoNotHaveDependencyOnAll(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAll, dependencies, false);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that have a dependency other than any of the given dependencies.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public PredicateList HaveDependenciesOtherThan(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.OnlyHaveDependenciesOnAnyOrNone, dependencies, false);
+            return new PredicateList(_types, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that meet a custom rule.
+        /// </summary>
+        /// <param name="rule">An instance of the custom rule.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public PredicateList MeetCustomRule(ICustomRule rule)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.MeetCustomRule, rule, true);
             return new PredicateList(_types, _sequence);
         }
     }

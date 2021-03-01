@@ -95,6 +95,18 @@
         }
 
         /// <summary>
+        /// Selects types whose names start with the specified text.
+        /// </summary>
+        /// <param name="start">The text to match against.</param>
+        /// <param name="comparer">The string comparer.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList HaveNameStartingWith(string start, StringComparison comparer)
+        {
+	        _sequence.AddFunctionCall(FunctionDelegates.MakeFunctionDelegateUsingStringComparerForHaveNameStartingWith(comparer), start, true);
+	        return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
         /// Selects types whose names do not start with the specified text.
         /// </summary>
         /// <param name="start">The text to match against.</param>
@@ -103,6 +115,18 @@
         {
             _sequence.AddFunctionCall(FunctionDelegates.HaveNameStartingWith, start, false);
             return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose names do not start with the specified text.
+        /// </summary>
+        /// <param name="start">The text to match against.</param>
+        /// <param name="comparer">The string comparer.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList NotHaveNameStartingWith(string start, StringComparison comparer)
+        {
+	        _sequence.AddFunctionCall(FunctionDelegates.MakeFunctionDelegateUsingStringComparerForHaveNameStartingWith(comparer), start, false);
+	        return new ConditionList(_types, _should, _sequence);
         }
 
         /// <summary>
@@ -120,6 +144,18 @@
         /// Selects types whose names do not end with the specified text.
         /// </summary>
         /// <param name="end">The text to match against.</param>
+        /// <param name="comparer">The string comparer.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList HaveNameEndingWith(string end, StringComparison comparer)
+        {
+	        _sequence.AddFunctionCall(FunctionDelegates.MakeFunctionDelegateUsingStringComparerForHaveNameEndingWith(comparer), end, true);
+	        return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose names do not end with the specified text.
+        /// </summary>
+        /// <param name="end">The text to match against.</param>
         /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
         public ConditionList NotHaveNameEndingWith(string end)
         {
@@ -128,7 +164,19 @@
         }
 
         /// <summary>
-        /// Selects types that implement a specific custom attribute.
+        /// Selects types whose names do not end with the specified text.
+        /// </summary>
+        /// <param name="end">The text to match against.</param>
+        /// <param name="comparer">The string comparer.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList NotHaveNameEndingWith(string end, StringComparison comparer)
+        {
+	        _sequence.AddFunctionCall(FunctionDelegates.MakeFunctionDelegateUsingStringComparerForHaveNameEndingWith(comparer), end, false);
+	        return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types are decorated with a specific custom attribut.
         /// </summary>
         /// <param name="attribute">The attribute to match against.</param>
         /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
@@ -139,13 +187,35 @@
         }
 
         /// <summary>
-        /// Selects types that do not implement a specific custom attribute.
+        /// Selects types that are not decorated with a specific custom attribute.
         /// </summary>
         /// <param name="attribute">The attribute to match against.</param>
         /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
         public ConditionList NotHaveCustomAttribute(Type attribute)
         {
             _sequence.AddFunctionCall(FunctionDelegates.HaveCustomAttribute, attribute, false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that are decorated with a specific custom attribute or derived one.
+        /// </summary>
+        /// <param name="attribute">The base attribute to match against.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList HaveCustomAttributeOrInherit(Type attribute)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveCustomAttributeOrInherit, attribute, true);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types are not decorated with a specific custom attribute or derived one.
+        /// </summary>
+        /// <param name="attribute">The base attribute to match against.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList NotHaveCustomAttributeOrInherit(Type attribute)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveCustomAttributeOrInherit, attribute, false);
             return new ConditionList(_types, _should, _sequence);
         }
 
@@ -285,12 +355,52 @@
         }
 
         /// <summary>
+        /// Selects types that are nested and public.
+        /// </summary>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList BeNestedPublic()
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.BeNestedPublic, true, true);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that are nested and private.
+        /// </summary>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList BeNestedPrivate()
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.BeNestedPrivate, true, true);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
         /// Selects types that are not nested.
         /// </summary>
         /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
         public ConditionList NotBeNested()
         {
             _sequence.AddFunctionCall(FunctionDelegates.BeNested, true, false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that are not nested and public.
+        /// </summary>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList NotBeNestedPublic()
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.BeNestedPublic, true, false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that are not nested and private.
+        /// </summary>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList NotBeNestedPrivate()
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.BeNestedPrivate, true, false);
             return new ConditionList(_types, _should, _sequence);
         }
 
@@ -419,24 +529,166 @@
         }
 
         /// <summary>
+        /// Selects types whose namespaces start with a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public ConditionList ResideInNamespaceStartingWith(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"^{name}", true);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose namespaces start with a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public ConditionList NotResideInNamespaceStartingWith(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"^{name}", false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose namespaces end with a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public ConditionList ResideInNamespaceEndingWith(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"{name}$", true);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose namespaces end with a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public ConditionList NotResideInNamespaceEndingWith(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"{name}$", false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose namespaces contain a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public ConditionList ResideInNamespaceContaining(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"^.*{name}.*$", true);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types whose namespaces contain a particular name part.
+        /// </summary>
+        /// <param name="name">The namespace part to match against.</param>
+        /// <returns>An updated set of predicates that can be applied to a list of types.</returns>
+        public ConditionList NotResideInNamespaceContaining(string name)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.ResideInNamespaceMatching, $"^.*{name}.*$", false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
         /// Selects types that have a dependency on a particular type.
         /// </summary>
-        /// <param name="dependency">The dependency to match against.</param>
+        /// <param name="dependency">The dependency to match against. This can be a namespace or a specific type.</param>
         /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
         public ConditionList HaveDependencyOn(string dependency)
         {
-            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOn, new List<string> { dependency }, true);
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAny, new List<string> { dependency }, true);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that have a dependency on any of the supplied types.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList HaveDependencyOnAny(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAny, dependencies, true);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that have a dependency on all of the particular types.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList HaveDependencyOnAll(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAll, dependencies, true);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that have a dependency on any of the supplied types and cannot have any other dependency. 
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList OnlyHaveDependenciesOn(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.OnlyHaveDependenciesOnAnyOrNone, dependencies, true);
             return new ConditionList(_types, _should, _sequence);
         }
 
         /// <summary>
         /// Selects types that do not have a dependency on a particular type.
         /// </summary>
-        /// <param name="dependency">The dependency type to match against.</param>
+        /// <param name="dependency">The dependency type to match against. This can be a namespace or a specific type.</param>
         /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
         public ConditionList NotHaveDependencyOn(string dependency)
         {
-            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOn, new List<string> { dependency }, false);
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAny, new List<string> { dependency }, false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+        /// <summary>
+        /// Selects types that do not have a dependency on any of the particular types.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList NotHaveDependencyOnAny(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAny, dependencies, false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that do not have a dependency on all of the particular types.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList NotHaveDependencyOnAll(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.HaveDependencyOnAll, dependencies, false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that have a dependency other than any of the given dependencies.
+        /// </summary>
+        /// <param name="dependencies">The dependencies to match against. These can be namespaces or specific types.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList HaveDependenciesOtherThan(params string[] dependencies)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.OnlyHaveDependenciesOnAnyOrNone, dependencies, false);
+            return new ConditionList(_types, _should, _sequence);
+        }
+
+        /// <summary>
+        /// Selects types that meet a custom rule.
+        /// </summary>
+        /// <param name="rule">An instance of the custom rule.</param>
+        /// <returns>An updated set of conditions that can be applied to a list of types.</returns>
+        public ConditionList MeetCustomRule(ICustomRule rule)
+        {
+            _sequence.AddFunctionCall(FunctionDelegates.MeetCustomRule, rule, true);
             return new ConditionList(_types, _should, _sequence);
         }
     }
