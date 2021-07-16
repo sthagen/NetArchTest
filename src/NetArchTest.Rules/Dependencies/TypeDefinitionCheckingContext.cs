@@ -9,13 +9,14 @@
     internal class TypeDefinitionCheckingContext
     {
         private readonly TypeDefinition _typeToCheck;
-        private readonly TypeDefinitionCheckingResult _result;
-        
+        private readonly TypeDefinitionCheckingResult _result;        
+        private readonly bool _serachForDependencyInFieldConstant;
 
-        public TypeDefinitionCheckingContext(TypeDefinition typeToCheck, TypeDefinitionCheckingResult.SearchType searchType, ISearchTree searchTree)
+        public TypeDefinitionCheckingContext(TypeDefinition typeToCheck, TypeDefinitionCheckingResult.SearchType searchType, ISearchTree searchTree, bool serachForDependencyInFieldConstant = false)
         {
             _typeToCheck = typeToCheck;
-            _result = new TypeDefinitionCheckingResult(searchType, searchTree);         
+            _result = new TypeDefinitionCheckingResult(searchType, searchTree);
+            _serachForDependencyInFieldConstant = serachForDependencyInFieldConstant;
         }
 
         public bool IsTypeFound()
@@ -96,6 +97,10 @@
                 {
                     CheckCustomAttributes(field);
                     CheckTypeReference(field.FieldType);
+                    if (_serachForDependencyInFieldConstant && field.HasConstant && field.FieldType.FullName == typeof(string).FullName)
+                    {
+                        _result.CheckDependency(field.Constant.ToString());
+                    }
                 }
             }
         }
@@ -140,19 +145,19 @@
                 foreach (var method in typeToCheck.Methods)
                 {
                     if (_result.CanWeSkipFurtherSearch()) return;
-                    this.CheckMethodHeader(method);
+                    CheckMethodHeader(method);
                 }
 
                 foreach (var method in typeToCheck.Methods)
                 {
                     if (_result.CanWeSkipFurtherSearch()) return;
-                    this.CheckMethodBodyVariables(method);
+                    CheckMethodBodyVariables(method);
                 }
 
                 foreach (var method in typeToCheck.Methods)
                 {
                     if (_result.CanWeSkipFurtherSearch()) return;
-                    this.CheckMethodBodyInstructions(method);
+                    CheckMethodBodyInstructions(method);
                 }
             }
         }
@@ -221,13 +226,16 @@
                             }
                             break;
                         case FieldReference fieldReference:
-                            if (!fieldReference.Resolve().CustomAttributes.IsCompilerGenerated())
+                            if (fieldReference.DeclaringType != _typeToCheck)
                             {
                                 CheckTypeReference(fieldReference.DeclaringType);
                             }
                             break;
                         case MethodReference methodReference:
-                            CheckTypeReference( methodReference.DeclaringType);
+                            if (methodReference.DeclaringType != _typeToCheck)
+                            {
+                                CheckTypeReference(methodReference.DeclaringType);
+                            }
                             break;
                     }
                 }

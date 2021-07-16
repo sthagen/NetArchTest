@@ -74,6 +74,22 @@
             }           
         }
 
+        public void CheckDependency(string dependencyTypeFullName)
+        {
+            var matchedDependencies = _searchTree.GetAllMatchingNames(dependencyTypeFullName);
+            if (matchedDependencies.Any())
+            {
+                foreach (var match in matchedDependencies)
+                {
+                    _foundDependencies.Add(match);
+                }
+            }
+            else
+            {
+                _hasDependencyFromOutsideOfSearchTree = true;
+            }
+        }
+
         public void CheckDependency(TypeReference dependency)
         {
             var matchedDependencies = _searchTree.GetAllMatchingNames(dependency);
@@ -86,7 +102,14 @@
             } 
             else
             {
-                _hasDependencyFromOutsideOfSearchTree = true;
+                if (_hasDependencyFromOutsideOfSearchTree == false)
+                {
+                    bool isGlobalAnonymousCompilerGeneratedType = String.IsNullOrEmpty(dependency.Namespace) && dependency.Name.StartsWith("<>");
+                    if (!isGlobalAnonymousCompilerGeneratedType)
+                    {
+                        _hasDependencyFromOutsideOfSearchTree = true;
+                    }
+                }
             }
         }
     }
